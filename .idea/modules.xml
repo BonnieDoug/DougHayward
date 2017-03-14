@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../DougMVC/.idea/DirectMVC.iml" filepath="$PROJECT_DIR$/../DougMVC/.idea/DirectMVC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/DirectMVC.iml" filepath="$PROJECT_DIR$/.idea/DirectMVC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/DougMVC.iml" filepath="$PROJECT_DIR$/.idea/DougMVC.iml" />
     </modules>
   </component>
 </project>
