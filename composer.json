@@ -1,0 +1,37 @@
+{
+  "name": "bonnie-doug/doug-mvc",
+  "description": "Simple framework utilising components from other frameworks and some self written. For learning and work use.",
+  "authors": [
+    {
+      "name": "Doug",
+      "email": "doug@bonniechef.com"
+    }
+  ],
+  "config": {
+    "platform": {
+      "php": "7.0"
+    }
+  },
+  "require": {
+    "php" : "7.0",
+    "symfony/http-foundation": "*",
+    "symfony/config": "*",
+    "symfony/security": "*",
+    "symfony/form": "*",
+    "symfony/translation": "*",
+    "symfony/validator": "*",
+    "twig/twig": "*",
+    "symfony/twig-bridge": "*",
+    "doctrine/orm": "*",
+    "symfony/yaml": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Core\\": "Application/Core",
+      "": "Application/Bundles"
+    },
+    "files": [
+      "Application/bootstrap.inc.php"
+    ]
+  }
+}

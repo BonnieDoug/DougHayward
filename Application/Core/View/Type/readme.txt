@@ -1,0 +1,1 @@
+A place for storing all new form types in one place, such as a bootstrap switch. For using within twig/symfony form types.
