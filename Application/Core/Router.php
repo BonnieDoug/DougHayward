@@ -87,7 +87,7 @@ class Router implements RouterInterface
             if (method_exists($class, $this->getAction())) {
                 call_user_func_array(array($class, $this->getAction()), $this->getParams());
             } else {
-                throw new NotFoundHttpException("Page not found", 404);
+                throw new NotFoundHttpException("Page not found");
             }
         } else {
             (new \IndexController())->indexAction();
