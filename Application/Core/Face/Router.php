@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Face;
+use Symfony\Component\HttpFoundation\Request;
 // Interface is a reserved word, so shortened to Face as I like to keep it tidy.
 // Might think of something better soon.
 
@@ -24,6 +25,6 @@ interface RouterInterface
 
     function setParams($params);
 
-    function splitUrl();
+    function splitUrl(Request $request);
 
 }

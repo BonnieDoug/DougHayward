@@ -2,8 +2,11 @@
 namespace Core;
 
 use Core\Face\RouterInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class Router implements RouterInterface {
+class Router implements RouterInterface
+{
 
     /** @var null The bundle */
     private $bundle = null;
@@ -17,129 +20,97 @@ class Router implements RouterInterface {
     /** @var array URL parameters */
     private $params = array();
 
-    function getBundle() {
+    function getBundle()
+    {
         return $this->bundle;
     }
 
-    function getController() {
+    function getController()
+    {
         return $this->controller;
     }
 
-    function getAction() {
+    function getAction()
+    {
         return $this->action;
     }
 
-    function getParams() {
+    function getParams()
+    {
         return $this->params;
     }
 
-    function setBundle($bundle) {
-        $this->bundle = $bundle;
+    function setBundle($bundle)
+    {
+        $this->bundle = $bundle; // The bundle
     }
 
-    function setController($controller) {
-        $this->controller = $controller;
+    function setController($controller)
+    {
+        $this->controller = $controller; // The controller we want.
     }
 
-    function setAction($action) {
-        $this->action = $action;
+    function setAction($action)
+    {
+        $this->action = $action; // The action within the controller we want.
     }
 
-    function setParams($params) {
-        $this->params = $params;
+    function setParams($params)
+    {
+        $this->params = $params; // These become variables passed straight into the controller.
     }
 
     /**
      * "Start" the application:
      * Analyze the URL elements and calls the according controller/method or the fallback
      */
-    public function __construct() {
+    public function __construct(Request $request)
+    {
 
-        // Check for Options request, if true send back 200. Options headers fuck everything up by attempting to process a blank packet.
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        // Check for Options request, if true send back 200.
+        // Options headers fuck everything up by attempting to process a blank packet (if using Angular).
+        if ($request->getMethod() == 'OPTIONS') {
             return http_response_code(200);
         }
         // create array with URL parts in $url
-        $this->splitUrl();
+        $this->splitUrl($request);
+        $this->getClass();
 
-        $error = "";
+    }
 
-        if (file_exists(APP ."Bundles/". $this->bundle . '/Controller/' . $this->controller . 'Controller.php')) {
-
-            // here we did check for controller: does such a controller exist ?
-            // if so, then load this file and create this controller
-            // example: if controller would be "car", then this line would translate into: $this->car = new car();
-            require APP ."Bundles/". $this->bundle . '/Controller/' . $this->controller . 'Controller.php';
-            // Hacking together to allow namespace loading of class.
-            $base = "\\SolutionHost\\" . $this->bundle . "\\Controller\\" . $this->controller . "Controller";
-            $this->controller = new $base;
+    public function getClass()
+    {
+        $namespace = "{$this->getBundle()}\\Controller\\{$this->getController()}";
+        if (class_exists($namespace)) {
+            $class = new $namespace;
             // check for method: does such a method exist in the controller ?
-            if (method_exists($this->controller, $this->action)) {
-                if (!empty($this->params)) {
-                    // Call the method and pass arguments to it
-                    // eg localhost/Controller/Action/param1/param2 etc
-                    call_user_func_array(array($this->controller, $this->action), $this->params);
-                } else {
-                    // If no parameters are given, just call the method without parameters, like $this->home->method();
-                    $this->controller->{$this->action}();
-                }
+            if (method_exists($class, $this->getAction())) {
+                call_user_func_array(array($class, $this->getAction()), $this->getParams());
             } else {
-                if (strlen($this->action) == 0) {
-                    // no action defined: call the default index() method of a selected controller
-                    $this->controller->indexAction();
-                } else {
-                    //Something failed so direct to error controller
-                    $error->errorType404Action("Error - No action found, and indexAction not defined.");
-                }
+                throw new NotFoundHttpException("Page not found", 404);
             }
-        } else if ($this->bundle != null && file_exists(APP ."Bundles/". $this->bundle . '/Controller/IndexController.php')) { //ELSE IF 'Bundles' has an index page.
-            require APP ."Bundles/". $this->bundle . '/Controller/IndexController.php';
-            $base = "\\" . $this->bundle . "\\Controller\IndexController";
-            $this->controller = new $base;
-            if (strlen($this->action) == 0) {
-                $this->controller->indexAction();
-            } else {
-                $error->errorType404Action("Error - No action found, and indexAction not defined.");
-            }
-        }
-        else if ($this->bundle != null && file_exists(APP ."Bundles/". $this->bundle . '/IndexController.php')) { //ELSE IF 'Bundles' has an index page.
-            require APP ."Bundles/". $this->bundle . '/Controller/IndexController.php';
-            $base = "\\" . $this->bundle . "\\Controller\IndexController";
-            $this->controller = new $base;
-            if (strlen($this->action) == 0) {
-                $this->controller->indexAction();
-            } else {
-                $error->errorType404Action("Error - No action found, and indexAction not defined.");
-            }
+        } else {
+            (new \IndexController())->indexAction();
         }
     }
 
     /**
      * Get and split the URL
      */
-    private function splitUrl() {
+    public function splitUrl(Request $request)
+    {
 
-        if (isset($_GET['url'])) {
+        if ($request->query->get('url')) {
             // split URL
-            $url = trim($_GET['url'], '/');
-            $url = filter_var($url, FILTER_SANITIZE_URL);
-            $url = explode('/', $url);
-
-            //print_r($url);
-
-            $bundle = isset($url[0]) ? ucfirst(strtolower($url[0])) : null;
-            $controller = isset($url[1]) ? ucfirst(strtolower($url[1])) : null;
-            $action = isset($url[2]) ? ucfirst(strtolower($url[2])) . "Action" : null;
-
+            $url = explode('/', filter_var(trim($request->query->get('url'), '/'), FILTER_SANITIZE_URL));
             // Put URL parts into according properties
-            $this->bundle = isset($bundle) ? $bundle : null;
-            $this->controller = isset($controller) ? $controller : null;
-            $this->action = isset($action) ? $action : null;
-
+            $this->setBundle(isset($url[0]) ? ucfirst(strtolower($url[0])) : null);
+            $this->setController(isset($url[1]) ? ucfirst(strtolower($url[1])) . "Controller" : null);
+            $this->setAction(isset($url[2]) ? ucfirst(strtolower($url[2])) . "Action" : null);
             // Remove controller and action from the split URL
-            unset($url[0], $url[1], $url[2], $bundle, $action, $controller);
+            unset($url[0], $url[1], $url[2]);
             // Rebase array keys and store the URL params
-            $this->params = array_values($url);
+            $this->setParams(array_values($url));
             return;
         }
     }
