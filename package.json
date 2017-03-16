@@ -1,0 +1,19 @@
+{
+  "name": "doug-mvc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.php",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BonnieDoug/DougHayward.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BonnieDoug/DougHayward/issues"
+  },
+  "homepage": "https://github.com/BonnieDoug/DougHayward#readme"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "doug-mvc",
+  "description": "",
+  "main": "index.php",
+  "authors": [
+    "Doug <doug@bonniechef.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/BonnieDoug/DougHayward",
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
