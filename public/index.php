@@ -1,4 +1,9 @@
 <?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+
+
+
 ////Load composers Autoloader. If you get an error here don't forget to run "composer update" and
 // if still getting errors try "composer dump-autoload"
 require_once __DIR__ . '/../vendor/autoload.php';

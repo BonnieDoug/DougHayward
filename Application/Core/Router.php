@@ -42,17 +42,17 @@ class Router implements RouterInterface
 
     function setBundle($bundle)
     {
-        $this->bundle = $bundle; // The bundle
+        $this->bundle = ucfirst(strtolower($bundle)); // The bundle
     }
 
     function setController($controller)
     {
-        $this->controller = $controller; // The controller we want.
+        $this->controller = ucfirst(strtolower($controller)) . "Controller"; // The controller we want.
     }
 
     function setAction($action)
     {
-        $this->action = $action; // The action within the controller we want.
+        $this->action = ucfirst(strtolower($action)) . "Action"; // The action within the controller we want.
     }
 
     function setParams($params)
@@ -66,31 +66,28 @@ class Router implements RouterInterface
      */
     public function __construct(Request $request)
     {
-
-        // Check for Options request, if true send back 200.
-        // Options headers fuck everything up by attempting to process a blank packet (if using Angular).
-        if ($request->getMethod() == 'OPTIONS') {
-            return http_response_code(200);
-        }
-        // create array with URL parts in $url
-        $this->splitUrl($request);
-        $this->getClass();
-
+        $this->getClass($this->splitUrl($request));
     }
 
     public function getClass()
     {
         $namespace = "{$this->getBundle()}\\Controller\\{$this->getController()}";
-        if (class_exists($namespace)) {
+        if (class_exists($namespace)) { // Namespace exists, and method found.
             $class = new $namespace;
             // check for method: does such a method exist in the controller ?
             if (method_exists($class, $this->getAction())) {
-                call_user_func_array(array($class, $this->getAction()), $this->getParams());
+                return call_user_func_array(array($class, $this->getAction()), $this->getParams());
+            } elseif (method_exists($class, "indexAction")) {
+                return call_user_func(array($class, "indexAction"));
             } else {
                 throw new NotFoundHttpException("Page not found");
             }
-        } else {
-            (new \IndexController())->indexAction();
+        } else { // Else show index page
+            // Old PHP
+            // $controller = new \IndexController();
+            // return $controller->indexAction();
+            // New PHP
+            return (new \IndexController())->indexAction();
         }
     }
 
@@ -104,9 +101,9 @@ class Router implements RouterInterface
             // split URL
             $url = explode('/', filter_var(trim($request->query->get('url'), '/'), FILTER_SANITIZE_URL));
             // Put URL parts into according properties
-            $this->setBundle(isset($url[0]) ? ucfirst(strtolower($url[0])) : null);
-            $this->setController(isset($url[1]) ? ucfirst(strtolower($url[1])) . "Controller" : null);
-            $this->setAction(isset($url[2]) ? ucfirst(strtolower($url[2])) . "Action" : null);
+            $this->setBundle(@$url[0]);
+            $this->setController(@$url[1]);
+            $this->setAction(@$url[2]);
             // Remove controller and action from the split URL
             unset($url[0], $url[1], $url[2]);
             // Rebase array keys and store the URL params
